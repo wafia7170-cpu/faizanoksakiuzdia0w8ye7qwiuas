@@ -4,6 +4,7 @@ import { ErrorBoundary } from "./components/error-boundary.tsx";
 import Lockscreen from "./pages/lock/page.tsx";
 import ChatPage from "./pages/chat/page.tsx";
 import { prefetchMessages } from "./lib/cloud-chat.ts";
+import { initBadgeAutoClear } from "./lib/badge.ts";
 
 // Lightweight private chat app: passcode gate → chat. Nothing else runs.
 export default function App() {
@@ -15,6 +16,11 @@ export default function App() {
   // entering the passcode — so messages are already in flight (often fully
   // loaded) by the time they unlock. This removes the "wait after passcode".
   useEffect(() => { void prefetchMessages(); }, []);
+
+  // Clear the app-icon unread badge whenever the user is looking at the app
+  // again (window becomes visible / focused). The service worker sets/counts
+  // the badge while the app is backgrounded or closed.
+  useEffect(() => initBadgeAutoClear(), []);
 
   return (
     <ErrorBoundary>

@@ -313,6 +313,24 @@
 ## agent_communication:
 ##     - agent: "main"
 ##       message: "Fixed the foreground-notification bug reported from the user's video. The fix is entirely in the service worker public/sw.js (client-side; the Supabase Edge Function is unchanged). Please verify against the LIVE preview URL (read REACT_APP/NEXT_PUBLIC base URL from /app/.env; current preview: https://vite-edge-functions.preview.emergentagent.com). Real web-push delivery cannot be simulated in headless Chromium, so verify the DECISION LOGIC of the shipped worker instead: (1) GET /sw.js and confirm it contains decideShowNotification and the 'visibilityState === visible' check; (2) in the page, define/eval the decideShowNotification function from the served sw.js source and assert: visible-client => returns false (notification SUPPRESSED), hidden-client => returns true (SHOWN), empty list => returns true (SHOWN); (3) regression: the app root loads and the passcode lockscreen renders with no uncaught console exceptions. Report PASS/FAIL per assertion."
+
+
+## ── FEATURE: App-icon unread badge (Web Badging API) ──
+  - task: "Show an unread count on the app icon for messages received while the user was away; clear it when they return"
+    implemented: true
+    working: "NA"
+    file: "public/sw.js, src/lib/badge.ts, src/App.tsx (also synced to frontend/public/sw.js and frontend/dist/sw.js)"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "FEATURE: app-icon unread badge. IMPLEMENTATION: (a) sw.js now persists a running unread count in IndexedDB (db 'ourchat-badge', store 'kv', key 'unread'); on each push it SHOWS (i.e. only when the app is backgrounded/closed — foreground pushes are still suppressed and do NOT increment) it calls incrementBadge() → navigator.setAppBadge(count). (b) sw.js listens for postMessage {type:'reset-badge'} and, in notificationclick, resets the count → navigator.clearAppBadge(). (c) src/lib/badge.ts initBadgeAutoClear() clears the badge (navigator.clearAppBadge + tells the SW to reset) whenever the window becomes visible/focused; wired into App.tsx via useEffect. NOTE: navigator.setAppBadge/clearAppBadge only actually paints on an INSTALLED PWA (incl. iOS 16.4+ Home-Screen apps) and is a no-op elsewhere; it cannot be visually verified in headless Chromium. HOW TO TEST (headless-friendly): (1) GET /sw.js and confirm it contains 'setAppBadge', 'incrementBadge', 'reset-badge', and 'clearAppBadge'; (2) in the page, calling the app's badge reset must not throw even when the Badging API is unsupported (graceful) — you can eval a small snippet that calls navigator.clearAppBadge?.() safely; (3) confirm decideShowNotification STILL behaves correctly (visible→false suppress, hidden→true show, []→true show) i.e. foreground pushes are still suppressed AND therefore do not bump the badge; (4) regression: app root loads, passcode lockscreen renders, 0 uncaught console exceptions."
+
+## agent_communication:
+##     - agent: "main"
+##       message: "Added the app-icon unread badge feature. It is client-side only (service worker + a small helper wired into App.tsx); the Supabase Edge Function and DB are unchanged. The OS badge itself only renders on a real INSTALLED PWA (iOS 16.4+/desktop Chrome), so it can't be pixel-verified headlessly — please verify the shipped logic instead per the task's HOW TO TEST notes, and confirm NO regression to the earlier foreground-suppression fix. Live preview base URL is in /app/.env (currently https://vite-edge-functions.preview.emergentagent.com)."
 ##     - agent: "testing"
 ##       message: "COMPREHENSIVE BUG FIX VERIFICATION COMPLETE. ALL THREE TESTS PASSED. The service worker foreground-suppression fix is production-ready and working exactly as specified. TEST 1: /sw.js serves correctly (HTTP 200) and contains both 'decideShowNotification' and 'visibilityState === visible'. TEST 2: Decision logic is 100% correct across all four scenarios (foreground suppression, backgrounded show, closed show, mixed clients suppression). TEST 3: No regression - app loads perfectly with passcode lockscreen and 0 console errors. The bug reported by the user (unwanted notifications while actively in the app) is FULLY RESOLVED."
 
