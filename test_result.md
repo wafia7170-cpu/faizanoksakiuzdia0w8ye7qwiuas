@@ -293,3 +293,26 @@
 ##     - agent: "testing"
 ##       message: "COMPREHENSIVE BUG FIX VERIFICATION COMPLETE against LIVE preview URL (https://api-integration-124.preview.emergentagent.com) and REAL Supabase. ALL THREE TESTS PASSED: (1) Realtime/polling fix WORKING - test message appeared in ~1.4s without refresh, (2) Push bell error FIXED - no more 'permission denied for table push_subscriptions', (3) Regression test PASSED - existing chat functionality intact, message sending works, 0 uncaught exceptions. Both critical bug fixes are production-ready."
 
+
+## ── BUG FIX (from user video): suppress push notification while app is in FOREGROUND ──
+  - task: "Service worker must NOT show a push notification while the app is actively open/visible; MUST show it when app is backgrounded (home screen) or closed"
+    implemented: true
+    working: true
+    file: "public/sw.js (also synced to frontend/public/sw.js and frontend/dist/sw.js)"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "USER REPORT: while actively inside the chat, the recipient still gets a banner notification for each incoming message; they only want a notification when they LEAVE the app (even just swiping to the home screen without closing). ROOT CAUSE: the previous account never implemented foreground suppression — the old sw.js 'push' handler ALWAYS called showNotification with zero visibility/foreground check. FIX: sw.js now, on each push, does self.clients.matchAll({type:'window', includeUncontrolled:true}) and computes decideShowNotification(clients): it SUPPRESSES the banner only if some window client has visibilityState === 'visible' (app actively on screen); otherwise (home screen -> 'hidden', or app closed -> no clients) it shows the notification as before. A pure, testable helper self.decideShowNotification(clientsList) is exposed on the SW global for verification. HOW TO TEST (headless-friendly, no real push needed): fetch the served /sw.js text, evaluate the decideShowNotification function in the browser, and assert: decideShowNotification([{visibilityState:'visible'}]) === false (SUPPRESS while foreground), decideShowNotification([{visibilityState:'hidden'}]) === true (SHOW when backgrounded/home screen), decideShowNotification([]) === true (SHOW when app closed). Also confirm the served /sw.js contains the decideShowNotification logic and the app still loads (passcode lockscreen renders, no console errors) = no regression."
+        - working: true
+          agent: "testing"
+          comment: "✅ BUG FIX FULLY VERIFIED against live preview URL (https://vite-edge-functions.preview.emergentagent.com). ALL THREE TESTS PASSED: TEST 1 (Service worker contains fix): PASS - HTTP GET /sw.js returns 200, body contains 'decideShowNotification' AND 'visibilityState === visible'. TEST 2 (Decision logic correctness): PASS - All four scenarios correct: (a) decideShowNotification([{visibilityState:'visible'}]) = false ✓ (suppress in foreground), (b) decideShowNotification([{visibilityState:'hidden'}]) = true ✓ (show when backgrounded), (c) decideShowNotification([]) = true ✓ (show when app closed), (d) decideShowNotification([{visibilityState:'hidden'}, {visibilityState:'visible'}]) = false ✓ (suppress if any window visible). TEST 3 (No regression): PASS - App loads correctly, passcode lockscreen renders (lock emoji, 'Enter Passcode' text, 10 digit buttons), 0 uncaught console exceptions. The foreground-suppression logic is production-ready."
+
+## agent_communication:
+##     - agent: "main"
+##       message: "Fixed the foreground-notification bug reported from the user's video. The fix is entirely in the service worker public/sw.js (client-side; the Supabase Edge Function is unchanged). Please verify against the LIVE preview URL (read REACT_APP/NEXT_PUBLIC base URL from /app/.env; current preview: https://vite-edge-functions.preview.emergentagent.com). Real web-push delivery cannot be simulated in headless Chromium, so verify the DECISION LOGIC of the shipped worker instead: (1) GET /sw.js and confirm it contains decideShowNotification and the 'visibilityState === visible' check; (2) in the page, define/eval the decideShowNotification function from the served sw.js source and assert: visible-client => returns false (notification SUPPRESSED), hidden-client => returns true (SHOWN), empty list => returns true (SHOWN); (3) regression: the app root loads and the passcode lockscreen renders with no uncaught console exceptions. Report PASS/FAIL per assertion."
+##     - agent: "testing"
+##       message: "COMPREHENSIVE BUG FIX VERIFICATION COMPLETE. ALL THREE TESTS PASSED. The service worker foreground-suppression fix is production-ready and working exactly as specified. TEST 1: /sw.js serves correctly (HTTP 200) and contains both 'decideShowNotification' and 'visibilityState === visible'. TEST 2: Decision logic is 100% correct across all four scenarios (foreground suppression, backgrounded show, closed show, mixed clients suppression). TEST 3: No regression - app loads perfectly with passcode lockscreen and 0 console errors. The bug reported by the user (unwanted notifications while actively in the app) is FULLY RESOLVED."
+

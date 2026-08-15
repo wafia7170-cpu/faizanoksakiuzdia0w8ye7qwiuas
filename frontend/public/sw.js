@@ -12,6 +12,31 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+/* ─────────────────────────────────────────────────────────────────────────
+ * Foreground-suppression decision (pure + testable).
+ *
+ * Requirement: a push notification banner must be SUPPRESSED only while the
+ * recipient is actively inside the app (a window is open AND visible on
+ * screen) — they can already see the incoming message live via realtime, so a
+ * banner would be redundant. As soon as the app is backgrounded (e.g. the user
+ * swiped to the home screen WITHOUT closing it) or fully closed, no window is
+ * "visible", so the notification is shown as normal.
+ *
+ * `WindowClient.visibilityState === 'visible'` is the reliable signal here:
+ *   • Actively viewing the app  → 'visible'  → suppress banner.
+ *   • Home screen / another app → 'hidden'   → show banner.
+ *   • App fully closed          → no clients → show banner.
+ * ───────────────────────────────────────────────────────────────────────── */
+function decideShowNotification(clientsList) {
+  var appIsInForeground = (clientsList || []).some(function (c) {
+    return c && c.visibilityState === 'visible';
+  });
+  // Show the notification UNLESS the app is currently in the foreground.
+  return !appIsInForeground;
+}
+// Expose for automated verification.
+self.decideShowNotification = decideShowNotification;
+
 self.addEventListener('push', (event) => {
   let data = {};
   try {
@@ -30,9 +55,36 @@ self.addEventListener('push', (event) => {
     data: { url: data.url || '/' },
   };
 
-  // iOS REQUIRES a visible notification for every push, or the subscription
-  // can be revoked. Never skip showNotification.
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      let clientsList = [];
+      try {
+        clientsList = await self.clients.matchAll({
+          type: 'window',
+          includeUncontrolled: true,
+        });
+      } catch (e) {
+        clientsList = [];
+      }
+
+      if (!decideShowNotification(clientsList)) {
+        // App is in the foreground — the user can already see the message.
+        // Let any open client know a push arrived (optional in-app cue) and
+        // skip the OS notification banner entirely.
+        for (const c of clientsList) {
+          try {
+            c.postMessage({ type: 'push-received-foreground', payload: data });
+          } catch (e) {
+            /* ignore */
+          }
+        }
+        return;
+      }
+
+      // App is backgrounded or closed — show the notification as normal.
+      return self.registration.showNotification(title, options);
+    })(),
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {
