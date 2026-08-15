@@ -157,6 +157,83 @@ export function takePrefetchedMessages(): Promise<ChatMessage[] | null> | null {
   return p;
 }
 
+// ── SEARCH ───────────────────────────────────────────────────────────────
+// Full-history search straight against Supabase (NOT just the loaded window),
+// so even very old messages are found. Two concerns are handled:
+//   1) TEXT match — case-insensitive substring on the `text` column (ilike).
+//   2) MEDIA match — image/video/voice messages often have text = null, so a
+//      keyword like "image", "photo", "video", "voice" or "media" matches by
+//      the message `type` instead. This never breaks legit null-text messages.
+// Results are de-duplicated and returned newest-first.
+const MEDIA_SEARCH_KEYWORDS: { types: MessageType[]; words: string[] }[] = [
+  { types: ["image"], words: ["image", "images", "photo", "photos", "pic", "pics", "picture", "pictures", "img", "snap", "selfie"] },
+  { types: ["video"], words: ["video", "videos", "clip", "clips", "movie", "reel", "reels", "vid"] },
+  { types: ["voice"], words: ["voice", "audio", "voicenote", "voicenotes", "recording", "recordings", "vn"] },
+  { types: ["image", "video", "voice"], words: ["media", "attachment", "attachments", "file", "files"] },
+];
+
+function mediaTypesForQuery(lowerQuery: string): MessageType[] {
+  const found = new Set<MessageType>();
+  for (const group of MEDIA_SEARCH_KEYWORDS) {
+    const hit = group.words.some(
+      (w) => lowerQuery === w || lowerQuery.includes(w),
+    );
+    if (hit) group.types.forEach((t) => found.add(t));
+  }
+  return Array.from(found);
+}
+
+export async function searchMessages(
+  rawQuery: string,
+  limit: number = 300,
+): Promise<ChatMessage[]> {
+  if (!isSupabaseConfigured) return [];
+  const q = rawQuery.trim();
+  if (!q) return [];
+  const lower = q.toLowerCase();
+
+  const results = new Map<string, ChatMessage>();
+
+  try {
+    // 1) TEXT substring match (case-insensitive). ilike uses % as wildcard.
+    const pattern = `%${q}%`;
+    const { data: textRows, error: textErr } = await supabase
+      .from("chat_messages")
+      .select(SELECT_COLS)
+      .ilike("text", pattern)
+      .order("timestamp", { ascending: false })
+      .limit(limit);
+    if (textErr) console.warn("[chat] searchMessages text error", textErr);
+    (textRows ?? []).forEach((r) => {
+      const m = mapRow(r as Record<string, unknown>);
+      results.set(m.id, m);
+    });
+
+    // 2) MEDIA type match when the query looks like a media keyword.
+    const mediaTypes = mediaTypesForQuery(lower);
+    if (mediaTypes.length > 0) {
+      const { data: mediaRows, error: mediaErr } = await supabase
+        .from("chat_messages")
+        .select(SELECT_COLS)
+        .in("type", mediaTypes)
+        .order("timestamp", { ascending: false })
+        .limit(limit);
+      if (mediaErr) console.warn("[chat] searchMessages media error", mediaErr);
+      (mediaRows ?? []).forEach((r) => {
+        const m = mapRow(r as Record<string, unknown>);
+        results.set(m.id, m);
+      });
+    }
+  } catch (err) {
+    console.error("[chat] searchMessages threw", err);
+    return [];
+  }
+
+  // Newest-first so result #1 is the most recent match.
+  return Array.from(results.values()).sort((a, b) => b.timestamp - a.timestamp);
+}
+
+
 // ── CREATE (text) ──────────────────────────────────────────────────────────
 export async function createMessage(
   text: string,

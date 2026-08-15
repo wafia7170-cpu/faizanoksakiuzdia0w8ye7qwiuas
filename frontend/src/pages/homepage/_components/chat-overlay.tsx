@@ -5,12 +5,14 @@ import {
   useRef,
   useCallback,
   useMemo,
+  type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import {
   listMessages as cloudListMessages,
   fetchOlderMessages as cloudFetchOlderMessages,
+  searchMessages as cloudSearchMessages,
   MESSAGE_PAGE_SIZE,
   takePrefetchedMessages,
   createMessage as cloudCreateMessage,
@@ -34,6 +36,23 @@ import NotificationBell from "@/components/notification-bell.tsx";
 const SESSION_ID_KEY = "hb_chat_session_id";
 const LAST_READ_KEY = "hb_chat_last_read";
 const SENDER_KEY = "hb_chat_sender";
+
+// Shared style for the small round search-nav buttons (up / down / close).
+const searchNavBtnStyle: CSSProperties = {
+  width: 30,
+  height: 30,
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 999,
+  border: "1px solid rgba(255,150,180,0.5)",
+  background: "rgba(255,240,245,0.95)",
+  color: "#c9184a",
+  fontSize: 16,
+  lineHeight: 1,
+  cursor: "pointer",
+};
 
 function getSessionId(): string {
   try {
@@ -380,6 +399,15 @@ export default function ChatOverlay({
   const [editModal, setEditModal] = useState<EditModalState | null>(null);
   const [confirmUnsend, setConfirmUnsend] = useState<ChatMessage | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  // ── Search (full-history) ─────────────────────────────────────────────────
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [searchIndex, setSearchIndex] = useState(0);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchDone, setSearchDone] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchSeqRef = useRef(0);
   const [otherTyping, setOtherTyping] = useState<Sender | null>(null);
 
   // Voice recording state
@@ -621,6 +649,10 @@ export default function ChatOverlay({
   useEffect(() => { renderLimitRef.current = renderLimit; }, [renderLimit]);
   const messagesLenRef = useRef(0);
   useEffect(() => { messagesLenRef.current = messages.length; }, [messages.length]);
+  // Full messages array mirrored into a ref so the async search-jump loop can
+  // read the latest list without stale closures.
+  const messagesArrRef = useRef<ChatMessage[]>([]);
+  useEffect(() => { messagesArrRef.current = messages; }, [messages]);
   // Latest "has older in DB" flag + the oldest loaded timestamp (pagination
   // cursor), mirrored into refs for the stable scroll listener / loadEarlier.
   const hasMoreOlderRef = useRef(false);
@@ -1321,6 +1353,92 @@ export default function ChatOverlay({
     }
   }, []);
 
+  // ── Jump to ANY message by id+timestamp, loading older pages / widening the
+  // render window as needed so search results that aren't currently on screen
+  // still scroll into view. Reuses the existing loadEarlier pagination.
+  const nextFrame = () =>
+    new Promise<void>((resolve) =>
+      requestAnimationFrame(() => setTimeout(resolve, 90)),
+    );
+
+  const goToMessage = useCallback(
+    async (id: string, ts: number) => {
+      // Fast path — already rendered.
+      if (messageRefs.current.get(id)) { jumpToMessage(id); return; }
+      for (let i = 0; i < 120; i++) {
+        if (messageRefs.current.get(id)) { jumpToMessage(id); return; }
+        const arr = messagesArrRef.current;
+        const loadedIdx = arr.findIndex((m) => m.id === id);
+        if (loadedIdx === -1) {
+          // Not in memory yet. If the oldest loaded is already older than the
+          // target but we still can't find it, it's gone (deleted) → stop.
+          const oldestTs = arr.length ? arr[0].timestamp : Infinity;
+          if (oldestTs <= ts) break;
+          if (!hasMoreOlderRef.current) break;
+          await loadEarlier(); // fetch an older page from Supabase
+        } else {
+          // In memory but outside the render window → widen it to include it.
+          const needed = arr.length - loadedIdx + 5;
+          if (renderLimitRef.current < needed) setRenderLimit((n) => Math.max(n, needed));
+        }
+        await nextFrame();
+      }
+      if (messageRefs.current.get(id)) jumpToMessage(id);
+    },
+    [jumpToMessage, loadEarlier],
+  );
+
+  // ── Run a full-history search and jump to the first (newest) match.
+  const runSearch = useCallback(async () => {
+    const q = searchQuery.trim();
+    // Dismiss the mobile keyboard the moment the user submits.
+    searchInputRef.current?.blur();
+    if (!q) {
+      setSearchResults([]);
+      setSearchIndex(0);
+      setSearchDone(false);
+      return;
+    }
+    const seq = ++searchSeqRef.current;
+    setSearchLoading(true);
+    setSearchDone(false);
+    try {
+      const res = await cloudSearchMessages(q);
+      if (seq !== searchSeqRef.current) return; // a newer search superseded this
+      setSearchResults(res);
+      setSearchIndex(0);
+      setSearchDone(true);
+      if (res.length > 0) {
+        void goToMessage(res[0].id, res[0].timestamp);
+      }
+    } finally {
+      if (seq === searchSeqRef.current) setSearchLoading(false);
+    }
+  }, [searchQuery, goToMessage]);
+
+  // ── Move between results (down = next/older, up = previous/newer).
+  const gotoResult = useCallback(
+    (nextIndex: number) => {
+      if (searchResults.length === 0) return;
+      const clamped = ((nextIndex % searchResults.length) + searchResults.length) % searchResults.length;
+      setSearchIndex(clamped);
+      const r = searchResults[clamped];
+      void goToMessage(r.id, r.timestamp);
+    },
+    [searchResults, goToMessage],
+  );
+
+  const closeSearch = useCallback(() => {
+    searchSeqRef.current++;
+    setSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchIndex(0);
+    setSearchLoading(false);
+    setSearchDone(false);
+    setHighlightId(null);
+  }, []);
+
   // ── Close handling
   const closeAll = () => {
     setActionMenu(null);
@@ -1575,7 +1693,7 @@ export default function ChatOverlay({
             </motion.button>
 
             <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, overflow: "hidden" }}>
                 <p
                   style={{
                     fontFamily: "'Great Vibes', cursive",
@@ -1583,6 +1701,10 @@ export default function ChatOverlay({
                     color: "white",
                     lineHeight: 1,
                     textShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                    minWidth: 0,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   Our Chat 💌
@@ -1624,7 +1746,141 @@ export default function ChatOverlay({
                 • end-to-end encrypted • messages stay forever unless you unsend
               </p>
             </div>
+
+            {/* Search — opens the full-history search bar (top-right) */}
+            <motion.button
+              data-testid="chat-search-toggle"
+              onClick={() => {
+                haptics.light();
+                if (searchOpen) {
+                  closeSearch();
+                } else {
+                  setSearchOpen(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 60);
+                }
+              }}
+              whileTap={{ scale: 0.88 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] as const }}
+              className="cursor-pointer rounded-full flex items-center justify-center"
+              style={{
+                width: 36,
+                height: 36,
+                background: searchOpen ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.28)",
+                border: "1px solid rgba(255,255,255,0.4)",
+                lineHeight: 1,
+                color: "white",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)",
+                willChange: "transform",
+                flexShrink: 0,
+                marginLeft: 12,
+              }}
+              aria-label="Search messages"
+              title="Search messages"
+            >
+              <span aria-hidden style={{ fontSize: 17, lineHeight: 1 }}>🔍</span>
+            </motion.button>
           </div>
+
+          {/* ── Search bar (full-history). Minimal fade/slide, no heavy FX ── */}
+          <AnimatePresence initial={false}>
+            {searchOpen && (
+              <motion.div
+                key="chat-search-bar"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.16, ease: "easeOut" }}
+                className="hb-chat-searchbar"
+                style={{
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "8px 12px",
+                  background: "rgba(255,255,255,0.96)",
+                  borderBottom: "1px solid rgba(255,150,180,0.35)",
+                  boxShadow: "0 4px 14px -8px rgba(255,80,130,0.5)",
+                  zIndex: 6,
+                }}
+              >
+                <form
+                  onSubmit={(e) => { e.preventDefault(); void runSearch(); }}
+                  style={{ flex: 1, display: "flex", alignItems: "center", minWidth: 0 }}
+                >
+                  <span aria-hidden style={{ fontSize: 15, marginRight: 6, opacity: 0.6 }}>🔍</span>
+                  <input
+                    ref={searchInputRef}
+                    data-testid="chat-search-input"
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setSearchDone(false); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void runSearch(); } }}
+                    type="search"
+                    inputMode="search"
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    placeholder="Search messages — or 'photo', 'video', 'voice'…"
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontSize: 16,
+                      color: "#7a2040",
+                    }}
+                  />
+                </form>
+
+                {/* Result counter + up/down navigation */}
+                {searchLoading ? (
+                  <span data-testid="chat-search-status" style={{ fontSize: 13, color: "rgba(122,32,64,0.7)", whiteSpace: "nowrap", fontFamily: "'Cormorant Garamond', serif" }}>
+                    Searching…
+                  </span>
+                ) : searchDone && searchResults.length === 0 ? (
+                  <span data-testid="chat-search-status" style={{ fontSize: 13, color: "rgba(122,32,64,0.7)", whiteSpace: "nowrap", fontFamily: "'Cormorant Garamond', serif" }}>
+                    No matches
+                  </span>
+                ) : searchResults.length > 0 ? (
+                  <>
+                    <span
+                      data-testid="chat-search-counter"
+                      style={{ fontSize: 13, color: "#c9184a", whiteSpace: "nowrap", minWidth: 40, textAlign: "center", fontVariantNumeric: "tabular-nums" }}
+                    >
+                      {searchIndex + 1}/{searchResults.length}
+                    </span>
+                    <button
+                      type="button"
+                      data-testid="chat-search-prev"
+                      onClick={() => { haptics.light(); gotoResult(searchIndex - 1); }}
+                      aria-label="Previous result"
+                      title="Previous"
+                      style={searchNavBtnStyle}
+                    >↑</button>
+                    <button
+                      type="button"
+                      data-testid="chat-search-next"
+                      onClick={() => { haptics.light(); gotoResult(searchIndex + 1); }}
+                      aria-label="Next result"
+                      title="Next"
+                      style={searchNavBtnStyle}
+                    >↓</button>
+                  </>
+                ) : null}
+
+                <button
+                  type="button"
+                  data-testid="chat-search-close"
+                  onClick={() => { haptics.light(); closeSearch(); }}
+                  aria-label="Close search"
+                  title="Close search"
+                  style={{ ...searchNavBtnStyle, color: "#7a2040" }}
+                >✕</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Messages viewport — wraps the scrollable list AND the hearts
               wallpaper.  The wallpaper is pinned to THIS wrapper (not the
