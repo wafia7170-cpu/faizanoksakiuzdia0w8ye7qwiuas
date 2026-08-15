@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────
+# Netlify deploy configuration for the birthday website
+# ─────────────────────────────────────────────────────────────────────────
+# The site is a pure Vite + React static SPA. All server-side features
+# (chat, realtime, storage, game scores) run on Supabase, so nothing else
+# needs to be deployed alongside the frontend.
+#
+# BEFORE THE FIRST DEPLOY: set the two environment variables below inside
+#   Site settings → Build & deploy → Environment
+# so Vite can bake them into the production bundle:
+#   • VITE_SUPABASE_URL      = https://suwdzoycyeihbkhmpxay.supabase.co
+#   • VITE_SUPABASE_ANON_KEY = <your Supabase anon key>
+# You can add REACT_APP_BACKEND_URL as well if you ever wire the FastAPI
+# backend to a hosted URL; the app runs fine without it.
+
+[build]
+  # Everything below is relative to this file (frontend/), which should be
+  # set as Netlify's "base directory" if the repo root differs.
+  base    = "."
+  command = "yarn install --frozen-lockfile && yarn build"
+  publish = "dist"
+
+[build.environment]
+  # Pin to a modern LTS so Vite 7 + SWC + Tailwind 4 (and @supabase/supabase-js,
+  # which requires Node >= 22) build cleanly. Mirrored in .nvmrc.
+  NODE_VERSION = "22"
+  # Non-fatal browserslist checks during CI builds.
+  BROWSERSLIST_IGNORE_OLD_DATA = "1"
+
+# SPA history-mode fallback so every route resolves to index.html.
+# NOTE: static files that actually exist (e.g. /sw.js, /manifest.webmanifest,
+# /icons/*) are served directly and are NOT affected by this catch-all.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Service worker must NEVER be cached immutably, or push updates won't roll out.
+# This rule is more specific than the /*.js rule below, so it wins for /sw.js.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "application/manifest+json"
+
+# Long-lived caching for hashed assets emitted by Vite. Index.html itself
+# stays uncached so updates roll out instantly.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"

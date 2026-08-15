@@ -1,0 +1,6 @@
+# Supabase local/deploy config. Only the push function needs verify_jwt=false
+# because the app has no user JWT — the Edge Function validates its own body.
+project_id = "suwdzoycyeihbkhmpxay"
+
+[functions.send-push-notification]
+verify_jwt = false

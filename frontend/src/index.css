@@ -1,0 +1,781 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans:
+    "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono:
+    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --font-serif:
+    "Cormorant Garamond", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 1rem;
+  --background: oklch(0.08 0.02 330);
+  --foreground: oklch(0.97 0.01 350);
+  --card: oklch(0.13 0.03 330 / 60%);
+  --card-foreground: oklch(0.97 0.01 350);
+  --popover: oklch(0.12 0.03 330);
+  --popover-foreground: oklch(0.97 0.01 350);
+  --primary: oklch(0.72 0.22 350);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.18 0.05 330);
+  --secondary-foreground: oklch(0.97 0.01 350);
+  --muted: oklch(0.18 0.05 330);
+  --muted-foreground: oklch(0.65 0.08 350);
+  --accent: oklch(0.72 0.22 350);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.72 0.22 350 / 20%);
+  --input: oklch(0.72 0.22 350 / 15%);
+  --ring: oklch(0.72 0.22 350 / 60%);
+  --chart-1: oklch(0.72 0.22 350);
+  --chart-2: oklch(0.65 0.18 320);
+  --chart-3: oklch(0.58 0.14 300);
+  --chart-4: oklch(0.82 0.12 30);
+  --chart-5: oklch(0.75 0.16 10);
+  --sidebar: oklch(0.10 0.02 330);
+  --sidebar-foreground: oklch(0.97 0.01 350);
+  --sidebar-primary: oklch(0.72 0.22 350);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.18 0.05 330);
+  --sidebar-accent-foreground: oklch(0.97 0.01 350);
+  --sidebar-border: oklch(0.72 0.22 350 / 20%);
+  --sidebar-ring: oklch(0.72 0.22 350 / 60%);
+}
+
+.dark {
+  --background: oklch(0.08 0.02 330);
+  --foreground: oklch(0.97 0.01 350);
+  --card: oklch(0.13 0.03 330 / 60%);
+  --card-foreground: oklch(0.97 0.01 350);
+  --popover: oklch(0.12 0.03 330);
+  --popover-foreground: oklch(0.97 0.01 350);
+  --primary: oklch(0.72 0.22 350);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.18 0.05 330);
+  --secondary-foreground: oklch(0.97 0.01 350);
+  --muted: oklch(0.18 0.05 330);
+  --muted-foreground: oklch(0.65 0.08 350);
+  --accent: oklch(0.72 0.22 350);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.72 0.22 350 / 20%);
+  --input: oklch(0.72 0.22 350 / 15%);
+  --ring: oklch(0.72 0.22 350 / 60%);
+  --chart-1: oklch(0.72 0.22 350);
+  --chart-2: oklch(0.65 0.18 320);
+  --chart-3: oklch(0.58 0.14 300);
+  --chart-4: oklch(0.82 0.12 30);
+  --chart-5: oklch(0.75 0.16 10);
+  --sidebar: oklch(0.10 0.02 330);
+  --sidebar-foreground: oklch(0.97 0.01 350);
+  --sidebar-primary: oklch(0.72 0.22 350);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.18 0.05 330);
+  --sidebar-accent-foreground: oklch(0.97 0.01 350);
+  --sidebar-border: oklch(0.72 0.22 350 / 20%);
+  --sidebar-ring: oklch(0.72 0.22 350 / 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+  html, body {
+    /* Solid pink underlay — never let the browser's default black show
+       through during page transitions on Android. When our heart-transition
+       canvas fades out and the next page hasn't fully painted its own
+       background yet (a 100-300 ms gap on mid-range Android devices), this
+       is what the user sees. It matches the intro/lockscreen theme so the
+       fallback is visually indistinguishable from the actual page. */
+    background-color: #ffb3cc;
+  }
+  #root {
+    /* Same fallback on the React root — covers the case where <body> has
+       been repainted before React re-renders the outer page container. */
+    background-color: #ffb3cc;
+    min-height: 100dvh;
+  }
+  body {
+    color: var(--foreground);
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  /* Premium selection: rose highlight */
+  ::selection {
+    background: rgba(255, 105, 135, 0.35);
+    color: #7a2040;
+    text-shadow: none;
+  }
+  /* Elegant focus ring — soft pink glow, no harsh outline */
+  :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.75),
+      0 0 0 4px rgba(255, 105, 135, 0.55),
+      0 0 20px rgba(255, 105, 135, 0.35);
+    border-radius: inherit;
+    transition: box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  button, [role="button"], a, input, select, textarea {
+    /* NOTE: `filter` intentionally excluded from this transition list.
+       Transitioning `filter` forces a full-layer repaint on every focus /
+       hover / press, which causes noticeable jank on Android (esp. Chrome
+       on mid-range devices). Any element that truly needs a filter change
+       can opt-in locally. */
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 260ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Custom pink scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(255, 143, 171, 0.55), rgba(201, 24, 74, 0.55));
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(255, 143, 171, 0.85), rgba(201, 24, 74, 0.85));
+    background-clip: padding-box;
+  }
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 105, 135, 0.55) transparent;
+  }
+  /* Promote motion elements to their own GPU layer so animations stay silky */
+  [data-motion-layer="true"],
+  .motion-smooth {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+  /* Nicer scrolling on iOS + smooth overflow */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  img, svg {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+}
+
+/* ── Reusable timing curves (Apple-grade smoothness) ─────────────────────── */
+:root {
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-in-out-expo:  cubic-bezier(0.87, 0, 0.13, 1);
+  --shadow-premium-sm:
+    0 1px 2px rgba(201, 24, 74, 0.08),
+    0 4px 12px rgba(255, 100, 140, 0.10),
+    0 12px 32px rgba(255, 80, 130, 0.10);
+  --shadow-premium:
+    0 2px 4px rgba(201, 24, 74, 0.06),
+    0 8px 24px rgba(255, 100, 140, 0.14),
+    0 24px 64px rgba(255, 80, 130, 0.14);
+  --shadow-premium-lg:
+    0 4px 8px rgba(201, 24, 74, 0.08),
+    0 16px 40px rgba(255, 100, 140, 0.18),
+    0 40px 96px rgba(255, 80, 130, 0.20);
+}
+
+/* Enable smoother rendering on high-DPI displays */
+html, body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+/* Reduced motion: this is a birthday-wish experience whose emotional weight
+   lives ENTIRELY in the animations (heart-swirl intro, letter flip, candle
+   flames, cake reveal, confetti). Habiba's Android has "Reduce Motion"
+   enabled by default in many launchers, and killing our animations would
+   defeat the entire point of the gift. Framer-Motion is already forced to
+   `reducedMotion="never"` via MotionConfig; we mirror that intent here for
+   pure-CSS animations too. If a user truly needs accessibility reduction,
+   they can pause the music track — the visual journey stays intact. */
+@media (prefers-reduced-motion: reduce) {
+  /* Intentionally empty — see comment above. */
+}
+
+/* ── Premium shimmer for hero titles (opt-in via class) ─────────────────── */
+@keyframes titleShimmer {
+  0%   { background-position: -180% 50%; }
+  100% { background-position: 280% 50%; }
+}
+.title-shimmer {
+  background: linear-gradient(
+    100deg,
+    currentColor 0%,
+    currentColor 42%,
+    rgba(255, 255, 255, 0.85) 50%,
+    currentColor 58%,
+    currentColor 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleShimmer 6.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-delay: 2.4s;
+}
+
+/* Subtle glass sheen — draw a diagonal light streak inside cards */
+.glass-sheen {
+  position: relative;
+  isolation: isolate;
+}
+.glass-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(160deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.06) 22%,
+      transparent 45%);
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+}
+
+/* ── Cake flame animations — compositor-friendly transforms ───────────────
+   Previously animated SVG geometry (`rx`, `ry`, `cy`) which forces per-frame
+   layout+paint on every browser. Rewritten to use `transform: scale()` on
+   each ellipse: transforms live on the GPU/compositor path, so all four
+   flame layers flicker in lockstep at 60fps regardless of what else is
+   painting behind them. `transform-box: fill-box` + `transform-origin`
+   pin the scale-center to each ellipse's actual centre. */
+.flame-outer {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  animation: flameGlow 0.55s ease-in-out infinite alternate;
+}
+.flame-mid {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  animation: flameMid 0.45s ease-in-out infinite alternate;
+}
+.flame-inner {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  animation: flameInner 0.38s ease-in-out infinite alternate;
+}
+.flame-tip {
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
+  animation: flameTip 0.3s ease-in-out infinite alternate;
+}
+@keyframes flameGlow {
+  from { transform: scale(1.00, 1.00); opacity: 0.9; }
+  to   { transform: scale(1.15, 0.88); opacity: 1;   }
+}
+@keyframes flameMid {
+  from { transform: scale(1.00, 1.00); }
+  to   { transform: scale(1.12, 0.83); }
+}
+@keyframes flameInner {
+  from { transform: scale(1.00, 1.00); }
+  to   { transform: scale(1.00, 0.86); }
+}
+@keyframes flameTip {
+  from { transform: translateY(0)     scale(1.00, 1.00); }
+  to   { transform: translateY(-0.8px) scale(1.10, 0.73); }
+}
+
+/* ── GPU-cheap heart glow ─────────────────────────────────────────────────
+   Uses `text-shadow` (cheap, GPU-composited) instead of `filter: drop-shadow`
+   (expensive, causes full-layer repaints). Emoji ♥ is a text char so
+   text-shadow gives the exact same premium glow visually. Adds GPU layer
+   promotion + paint containment so 40+ animated hearts stay 60fps. */
+.heart-glow-lg {
+  text-shadow:
+    0 0 6px rgba(255, 100, 140, 0.55),
+    0 0 14px rgba(255, 80, 130, 0.35);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+.heart-glow-sm {
+  text-shadow: 0 0 4px rgba(255, 120, 150, 0.45);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+.heart-glow-red {
+  text-shadow:
+    0 0 8px rgba(255, 77, 122, 0.65),
+    0 0 18px rgba(255, 80, 130, 0.35);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+/* Silky sparkle dot: cheap box-shadow (single layer), GPU-composited */
+.sparkle-dot {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+/* Force a compositor layer for smooth entry animations on cards */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SILKY-FLIP — the anti-lag toolkit for 3D-rotating glass cards.
+   Use `.silky-flip` on any element that animates `rotateY` / `rotateX`.
+   Use `.smooth-card` on any glass card with `backdrop-filter` + boxShadow.
+   Use `.flip-stage` on the `perspective` parent that WRAPS the flipping card.
+
+   Why these work (technical):
+   1. `translate3d(0,0,0)` forces a dedicated GPU compositor layer so the
+      browser can rasterize the card ONCE and just re-transform on each frame.
+      Without this, iOS Safari repaints the whole card every 16ms.
+   2. `backface-visibility: hidden` skips the back-face culling calculation
+      that WebKit runs by default on every rotate frame.
+   3. `contain: layout paint style` isolates layout / paint / style
+      invalidation to inside the card — a scroll or resize outside cannot
+      cascade a repaint into the flipping element.
+   4. `isolation: isolate` creates its own stacking context, meaning the
+      browser doesn't have to composite this element with siblings on every
+      frame — huge win when the card sits above 44+ ambient hearts.
+   5. `perspective` on `.flip-stage` (parent) instead of the flipping child
+      keeps the perspective transform matrix stable across frames — WebKit
+      caches it as an ancestor transform. Applying perspective on the
+      animating child itself recomputes the matrix every frame.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Wraps a `perspective: ...` parent to give the whole flip stage its own
+   compositor layer + paint isolation. Add to the div that wraps the AnimatePresence.
+   NOTE: `isolation` and `contain: paint` live HERE, not on `.silky-flip`, because
+   per CSS spec those properties force `transform-style: flat` on the SAME element,
+   which would break `backface-visibility: hidden` on the flipping card's faces. */
+.flip-stage {
+  transform: translate3d(0, 0, 0);
+  isolation: isolate;
+  contain: layout paint style;
+  will-change: transform;
+}
+
+/* Applies to the `motion.div` element that actually animates rotateY.
+   Must NOT set `contain`, `isolation`, `filter`, `opacity<1`, `overflow`, or any
+   other property that forces `transform-style: flat` — that would collapse the
+   3D scene and make `backface-visibility` on child faces stop working.
+   Also must NOT set `backface-visibility` here — this element uses
+   `transform-style: preserve-3d` so it acts as a 3D CONTAINER, not a plane.
+   Backface-visibility goes on the FACE divs (children), not on this container.
+   Perspective goes on `.flip-stage` (parent), not here. */
+.silky-flip {
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Marks a glass card (has backdrop-filter + heavy boxShadow) so that paint
+   work stays contained to this element during 3D transforms. Combine with
+   `.silky-flip` on the SAME element OR use on nested content.
+   `contain: layout paint style` prevents any style/layout/paint change from
+   escaping this box — critical for `backdrop-filter` performance because
+   the browser only needs to re-blur when THIS element changes, not siblings. */
+.smooth-card {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: layout paint style;
+  isolation: isolate;
+  /* Hint the browser that backdrop-filter is going to be animated with the
+     parent transform — allows WebKit to keep the blur on the GPU layer
+     across frames instead of re-rasterising the whole subtree. */
+  will-change: transform;
+}
+
+/* Utility to force any child that has `filter: drop-shadow` / `backdrop-filter`
+   into its own compositor layer. Use sparingly — every layer costs memory. */
+.gpu-composite {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+  contain: paint;
+}
+
+/* ── Music volume slider: hide native track (so our custom gradient shows
+   through) while keeping the thumb visible and draggable everywhere. ─── */
+.music-volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  height: 18px;
+}
+.music-volume-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+  border-radius: 999px;
+}
+.music-volume-slider::-moz-range-track {
+  height: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+}
+.music-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ff4d7a;
+  box-shadow: 0 2px 6px rgba(255, 80, 130, 0.45);
+  cursor: pointer;
+  margin-top: -4px;
+  transition: transform 0.15s ease;
+}
+.music-volume-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+.music-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #ff4d7a;
+  box-shadow: 0 2px 6px rgba(255, 80, 130, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.music-volume-slider:active::-moz-range-thumb {
+  transform: scale(1.2);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAKE — Birthday-message reveal (compositor-only)
+   Rebuilt from a Framer-Motion spring on a `backdrop-filter` element into
+   a pure-CSS reveal that runs entirely on the compositor thread.
+
+   Why the previous version stuttered:
+     • Framer-Motion springs drive frames from JavaScript (rAF). Each frame
+       reconciled React state → the spring integrator advanced → the DOM
+       property was written → the browser had to composite it AGAINST a
+       still-animating confetti canvas AND a heavy `backdrop-filter: blur`
+       AND a 3-layer boxShadow. That is four expensive tasks fighting for
+       the same 16 ms budget → visible jank.
+
+   How this version stays silky:
+     1. The card is always mounted in the DOM (rendered on first Cake paint
+        with `opacity: 0`). No first-paint cost happens during the reveal
+        because the element is already promoted, styled, and laid out.
+     2. Reveal = CSS transition on `opacity` + `transform` only. Both are
+        compositor-native → zero JS involvement, zero React reconciliation.
+     3. `backdrop-filter: blur(24px)` is applied only AFTER the transform
+        settles (900 ms delay via a separate keyframe animation). This
+        removes the "re-blur every frame while scaling" hot loop that was
+        the actual source of stutter.
+     4. `contain: layout paint` scopes paint invalidation to the card, so
+        it can never accidentally invalidate the confetti canvas layer.
+     5. `will-change` + `translateZ(0)` + `backface-visibility: hidden`
+        keep the card on its own compositor layer across the entrance.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.bday-msg-card {
+  padding: clamp(20px, 5vw, 32px) clamp(28px, 8vw, 48px);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1.5px solid rgba(255, 150, 180, 0.4);
+  box-shadow:
+    0 2px 4px rgba(201, 24, 74, 0.08),
+    0 12px 32px rgba(255, 100, 140, 0.22),
+    0 32px 80px rgba(255, 80, 130, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-align: center;
+  transform: translate3d(0, 28px, 0) scale(0.82);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+  contain: layout paint;
+  transition:
+    opacity 550ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bday-msg-card.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  pointer-events: auto;
+  /* Backdrop-blur activates *after* the transform settles — no per-frame
+     re-blur during the entrance. Fill-mode:forwards keeps it applied. */
+  animation: bdayBlurIn 450ms 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes bdayBlurIn {
+  from {
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    background: rgba(255, 255, 255, 0.82);
+  }
+  to {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+.bday-line-1,
+.bday-line-2 {
+  display: inline-block;
+  font-family: "Great Vibes", cursive;
+  line-height: 1.1;
+  transform: translate3d(0, 12px, 0);
+  opacity: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+.bday-line-1 {
+  font-size: clamp(26px, 7vw, 48px);
+  color: #c9184a;
+  text-shadow: 0 2px 12px rgba(255, 80, 140, 0.3);
+}
+.bday-line-2 {
+  font-size: clamp(22px, 6vw, 40px);
+  color: #ff4d7a;
+  text-shadow: 0 2px 20px rgba(255, 80, 140, 0.4);
+}
+/* Trigger both lines' animations only after the parent enters — the class
+   swap on `.bday-msg-card` restarts these animations at the right moment. */
+.bday-msg-card.is-visible .bday-line-1 {
+  animation:
+    bdayLine1In 550ms 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    bdayLine1Hover 3.2s 750ms cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+.bday-msg-card.is-visible .bday-line-2 {
+  animation:
+    bdayLine2In 550ms 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    bdayLine2Hover 3.6s 950ms cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+@keyframes bdayLine1In {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) rotate(-1deg); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0)    rotate(-1deg); }
+}
+@keyframes bdayLine1Hover {
+  0%   { transform: translate3d(0, 0, 0)   rotate(-1deg); }
+  50%  { transform: translate3d(0, -6px, 0) rotate(0.8deg); }
+  100% { transform: translate3d(0, 0, 0)   rotate(-1deg); }
+}
+@keyframes bdayLine2In {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) rotate(1deg); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0)    rotate(1deg); }
+}
+@keyframes bdayLine2Hover {
+  0%   { transform: translate3d(0, 0, 0)    rotate(1deg); }
+  50%  { transform: translate3d(0, -8px, 0) rotate(-0.9deg); }
+  100% { transform: translate3d(0, 0, 0)    rotate(1deg); }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMBIENT + MODAL HEARTS — pure CSS animations (moved off the JS thread)
+   ═══════════════════════════════════════════════════════════════════════════
+   Previously each of the 44 ambient hearts (and 18 modal hearts) was driven
+   by Framer Motion's rAF loop → 44 parallel JS timelines running every frame.
+   On low-end Android that was enough to eat the frame budget and cause
+   noticeable stutter across the whole page.
+
+   Now every heart uses a single CSS `@keyframes` cycle. The browser runs
+   these entirely on the compositor thread — zero JS overhead per frame —
+   and the visual result is pixel-indistinguishable from the previous
+   Framer implementation.
+
+   Per-element parameters (opacity target, drift XY, rotation, duration,
+   delay) are passed via CSS custom properties on inline style, so React
+   still owns the "shape" of the animation without paying its runtime cost.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hb-ambient-heart {
+  position: absolute;
+  animation:
+    hb-ambient-heart var(--hb-dur, 6s) cubic-bezier(0.42, 0, 0.58, 1) var(--hb-delay, 0s) infinite;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Text-shadow is far cheaper than filter:drop-shadow for a single ♥ char */
+  text-shadow:
+    0 0 6px rgba(255, 105, 135, 0.35),
+    0 0 12px rgba(255, 80, 130, 0.15);
+}
+@keyframes hb-ambient-heart {
+  0%   { opacity: 0;
+         transform: translate3d(0, 0, 0)                                                        scale(0.6) rotate(var(--hb-r0, 0deg)); }
+  25%  { opacity: var(--hb-o, 0.5);
+         transform: translate3d(calc(var(--hb-dx, 0px) * 0.4), calc(var(--hb-dy, 0px) * 0.4), 0) scale(1)   rotate(calc(var(--hb-r0, 0deg) + 6deg)); }
+  70%  { opacity: var(--hb-o, 0.5);
+         transform: translate3d(var(--hb-dx, 0px),                var(--hb-dy, 0px),          0) scale(1)   rotate(calc(var(--hb-r0, 0deg) - 4deg)); }
+  92%  { opacity: 0;
+         transform: translate3d(var(--hb-dx, 0px),                var(--hb-dy, 0px),          0) scale(0.7) rotate(var(--hb-r0, 0deg)); }
+  100% { opacity: 0;
+         transform: translate3d(0, 0, 0)                                                        scale(0.6) rotate(var(--hb-r0, 0deg)); }
+}
+
+.hb-modal-rise-heart {
+  position: absolute;
+  animation:
+    hb-modal-rise var(--hb-dur, 9s) linear var(--hb-delay, 0s) infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+@keyframes hb-modal-rise {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, calc(-1 * var(--hb-rise, 900px)), 0); }
+}
+
+/* ── FLOATING AMBIENT HEARTS (lockscreen / mcq / intro) ──────────────────
+   Previously each rising background heart was a `motion.div` running its
+   own Framer JS timeline on every rAF. With 18 (lockscreen) + 22 (mcq)
+   + 16 (intro) = 56 parallel JS timelines on mid-range Android, this was
+   the single biggest source of ambient stutter after the transition
+   canvas.  This class delivers pixel-identical motion via a pure-CSS
+   compositor-driven animation, so the entire ambient layer costs the
+   browser exactly *zero* JS frames.
+
+   Distance is passed via `--hb-rise` (matches the JS `SCREEN_H + N`
+   calculation).  Duration + delay come from `--hb-dur` and `--hb-delay`.
+   To pause an entire page's ambient layer (used when a transition is
+   running so page animations don't compete with the canvas), set inline
+   `animation-play-state: paused` on each element — costs the compositor
+   nothing and freezes the layer perfectly.  */
+.hb-rise-heart {
+  position: absolute;
+  animation: hb-rise-heart var(--hb-dur, 12s) linear var(--hb-delay, 0s) infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Paint containment keeps repaints for each heart local to its own box,
+     preventing 22 hearts on MCQ from invalidating the whole background. */
+  contain: layout paint;
+}
+@keyframes hb-rise-heart {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, calc(-1 * var(--hb-rise, 900px)), 0); }
+}
+
+/* ── Chat: typing dots ─────────────────────────────────────────────────── */
+.hb-typing-dot {
+  display: inline-block;
+  animation: hb-typing-blink 1.1s infinite ease-in-out both;
+}
+@keyframes hb-typing-blink {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30%           { opacity: 1;    transform: translateY(-2px); }
+}
+
+/* ── Chat: recording pulse ─────────────────────────────────────────────── */
+@keyframes hb-pulse {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%      { transform: scale(1.35); opacity: 0.55; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOW-END-DEVICE PERFORMANCE MODE (global safety-net)
+   Removes every GPU-heavy / always-on effect that could heat a phone during
+   long chats. Static visuals only → butter-smooth even on cheap Android.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1) Kill ALL backdrop blur everywhere (the single biggest GPU cost). */
+*,
+*::before,
+*::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* 2) Remove the animated/blended glass sheen overlay. */
+.glass-sheen::after { display: none !important; content: none !important; }
+
+/* 3) Remove every decorative heart wallpaper + its infinite animation. */
+.hb-chat-hearts-bg,
+.hb-modal-rise-heart,
+.hb-ambient-heart,
+.hb-rise-heart { display: none !important; animation: none !important; }
+.hb-chat-hearts-bg svg { display: none !important; animation: none !important; }
+
+/* 4) Honour battery-saver / reduced-motion by disabling any leftover loops. */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; }
+}
